@@ -1,127 +1,49 @@
 import React from "react";
-import { css } from "@emotion/css";
-import { keyframes } from '@emotion/react';
-import Image from 'next/image';
+import useSWRInfinite from "swr/infinite";
+import LoadingMaster from "@/components/Atom/LoadingMaster";
 
-import LoadingSrc from '../public/Loading.svg';
-
-const rotate = keyframes`
-  0% {
-    transform: rotate(0);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`
-
-export function LoadingMaster() {
-  return (
-    <div
-      className={css([
-        {
-          width: "100vw",
-          height: "100vh",
-          position: "fixed",
-          zIndex: 10,
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "#f2f2f2",
-          opacity: 0.7,
-          userSelect: "none",
-          pointerEvents: "none",
-        },
-      ])}
-    >
-      <Image
-        alt="loading..."
-        src={LoadingSrc}
-        className={css([
-          {
-            width: 36,
-            height: 36,
-            animation: `${rotate} .4s ease infinite`,
-          },
-        ])}
-      />
-    </div>
-  );
+const getKey = (index: number) => {
+  return `/api/posts?offset=${index * DEFAULT_PAGINATION.offset}&limit=${DEFAULT_PAGINATION.limit}`;
 };
 
-export default function Home({ data = [] }) {
-  const [list, setList] = React.useState<any[]>([...data]);
-  const [loading, setLoading] = React.useState(false);
-  const [hasMore, setHasMore] = React.useState(true);
-
+export default function Home() {
   const observer = React.useRef<any>(null);
-  const pagination = React.useRef<{
-    limit: number;
-    total?: number;
-    offset: number;
-  }>(DEFAULT_PAGINATION);
 
-  const fetchData = (
-    {
-      limit = DEFAULT_PAGINATION.limit,
-      offset = DEFAULT_PAGINATION.offset,
-    }: {
-      limit: number | undefined;
-      offset: number | undefined;
-    }
-  ) => {
-    setTimeout(() => {
-      fetch(
-        `${process.env.NEXT_PUBLIC_API}/api/posts?limit=${limit}&offset=${offset}`
-      )
-        .then((res) => res.json())
-        .then(({ data }) => {
-          setList((list) => [...list, ...data?.posts]);
+  const { data, size, setSize, isLoading, isValidating } = useSWRInfinite(
+    getKey,
+    (url) => fetch(url).then((res) => res.json())
+  );
 
-          pagination.current = {
-            limit: data?.limit,
-            total: data?.total,
-            offset: data?.offset,
-          };
+  const sizeRef = React.useRef(size);
 
-          setLoading(false);
-        });
-    }, 2000);
-  };
-
-  React.useEffect(() => {
-    setLoading(true);
-    fetchData(DEFAULT_PAGINATION);
-  }, []);
+  const posts = React.useMemo(() => {
+    const _data: any[] = data ? [].concat(...data) : [];
+    return _data.map((el) => el?.data?.posts)?.flat?.();
+  }, [data]);
 
   const lastItemRef = React.useCallback(
     (node: HTMLDivElement | undefined | null) => {
-      if (observer.current) if (loading) return;
-      observer.current?.disconnect?.();
+      if (isLoading) return;
+      if (observer.current) observer.current?.disconnect?.();
 
       observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          const _offset = pagination.current.offset + 10;
+        if (entries[0].isIntersecting) {
+          const _size = sizeRef.current + 1;
 
-          if (_offset <= (pagination.current.total || 0)) {
-            setLoading(true);
-            fetchData({ limit: 10, offset: pagination.current.offset + 10 });
-          } else setHasMore(false);
+          sizeRef.current = _size;
+          setSize(_size);
         }
       });
 
       if (node) observer.current?.observe?.(node);
     },
-    [loading, hasMore]
+    [isLoading, setSize]
   );
 
   return (
     <>
-      {loading && (
-        <LoadingMaster />
-      )}
+      {(isLoading || isValidating || !posts) && <LoadingMaster />}
+
       <div
         style={{
           display: "flex",
@@ -129,22 +51,8 @@ export default function Home({ data = [] }) {
           alignItems: "center",
         }}
       >
-        {list.map(({ id, title, body }, index) =>
-          index === pagination.current?.total ? (
-            <div
-              key={id}
-              style={{
-                margin: 8,
-                padding: 8,
-                width: 500,
-                boxShadow: "rgba(100, 100, 111, 0.2) 0px 7px 29px 0px",
-                background: "#fff",
-              }}
-            >
-              <h4>{title}</h4>
-              <div>{body}</div>
-            </div>
-          ) : (
+        {posts &&
+          posts.map(({ id, title, body }) => (
             <div
               key={id}
               ref={lastItemRef}
@@ -159,8 +67,7 @@ export default function Home({ data = [] }) {
               <h4>{title}</h4>
               <div>{body}</div>
             </div>
-          )
-        )}
+          ))}
       </div>
     </>
   );
@@ -168,5 +75,5 @@ export default function Home({ data = [] }) {
 
 const DEFAULT_PAGINATION = {
   limit: 10,
-  offset: 0,
+  offset: 10,
 };
