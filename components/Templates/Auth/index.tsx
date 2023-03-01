@@ -108,7 +108,11 @@ export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
                 <span>
                   <IntlMessages id="app.userAuth.or" />
                 </span>{" "}
-                <Link href={type === AUTH_TYPE.SIGN_IN ? '/auth/signup' : '/auth/signin'}>
+                <Link
+                  href={
+                    type === AUTH_TYPE.SIGN_IN ? "/auth/signup" : "/auth/signin"
+                  }
+                >
                   <IntlMessages
                     id={`app.userAuth.${
                       type === AUTH_TYPE.SIGN_IN ? "signUp" : "signIn"
@@ -116,46 +120,21 @@ export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
                   />
                 </Link>
               </Form.Item>
+
               <div className="gx-flex-row gx-justify-content-between">
                 <span>or connect with</span>
                 <ul className="gx-social-link">
-                  <li>
-                    <GoogleOutlined
-                      onClick={() => {
-                        // dispatch(showAuthLoader());
-                        // dispatch(userGoogleSignIn());
-                      }}
-                    />
-                  </li>
-                  <li>
-                    <FacebookOutlined
-                      onClick={() => {
-                        // dispatch(showAuthLoader());
-                        // dispatch(userFacebookSignIn());
-                      }}
-                    />
-                  </li>
-                  <li>
-                    <GithubOutlined
-                      onClick={() => {
-                        // dispatch(showAuthLoader());
-                        // dispatch(userGithubSignIn());
-                      }}
-                    />
-                  </li>
-                  <li>
-                    <TwitterOutlined
-                      onClick={() => {
-                        // dispatch(showAuthLoader());
-                        // dispatch(userTwitterSignIn());
-                      }}
-                    />
-                  </li>
+                  {socials.map((el) => {
+                    return (
+                      <li key={el.key as string}>
+                        {el.render({
+                          onClick: () => console.log("type", el.key)
+                        }) as unknown as JSX.Element}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
-              <span className="gx-text-light gx-fs-sm">
-                {`demo user email: 'demo@example.com' and password: 'demo#123'`}
-              </span>
             </Form>
           </div>
 
@@ -180,3 +159,25 @@ const alertMessage = "";
 const message = {
   error: (content: string) => content as string,
 };
+
+const socials: {
+  key: string;
+  render: (rest?: Record<string, unknown>) => JSX.Element;
+}[] = [
+  {
+    key: "GOOGLE",
+    render: (rest) => <GoogleOutlined {...rest} />,
+  },
+  {
+    key: "FACEBOOK",
+    render: (rest) => <FacebookOutlined {...rest} />,
+  },
+  {
+    key: "GITHUB",
+    render: (rest) => <GithubOutlined {...rest} />,
+  },
+  {
+    key: "TWITTER",
+    render: (rest) => <TwitterOutlined {...rest} />,
+  },
+];
