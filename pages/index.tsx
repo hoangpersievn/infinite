@@ -1,6 +1,6 @@
 import React from "react";
 import useSWRInfinite from "swr/infinite";
-import LoadingMaster from "@/components/Atom/LoadingMaster";
+import LoadingMaster from "@/components/Atoms/LoadingMaster";
 
 const getKey = (index: number) => {
   return `/api/posts?offset=${index * DEFAULT_PAGINATION.offset}&limit=${DEFAULT_PAGINATION.limit}`;
