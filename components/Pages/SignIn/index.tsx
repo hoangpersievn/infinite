@@ -1,23 +1,18 @@
-import { ValidateErrorEntity } from "rc-field-form/lib/interface";
-import { Auth } from '@/components/Templates/Auth';
+import { Auth, TCredentials } from '@/components/Templates/Auth';
 import { AUTH_TYPE } from '@/constants/type';
+import { createSignInService } from "@/modules/SignIn/SignInProvider";
 
 export function SignIn() {
-  const onFinish = (values: Record<string, string>) => {
-    console.log("finish", values);
-    // dispatch(showAuthLoader());
-    // dispatch(userSignIn(values));
+  const {data, isLoading, mutate } = createSignInService().useSignIn();
+
+  const onDispatch = async ({ value }: { value: TCredentials }) => {
+    const credentials = {
+      username: value.username,
+      password: value.password,
+    };
+
+    await mutate(credentials as any);
   };
 
-  const onFinishFailed = (
-    errorInfo: ValidateErrorEntity<Record<string, string>>
-  ) => {
-    console.log("Failed:", errorInfo);
-  };
-
-  const onDispatch = ({ type, value }: { type: string; value: unknown }) => {
-    console.log({ type, value });
-  };
-
-  return <Auth type={AUTH_TYPE.SIGN_IN} dispatch={onDispatch} />;
+  return <Auth type={AUTH_TYPE.SIGN_IN} dispatch={onDispatch} isLoading={isLoading} />;
 }

@@ -14,6 +14,10 @@ app.prepare().then(() => {
     return handle(req, res);
   });
 
+  server.post("*", (req, res) => {
+    return handle(req, res);
+  });
+
   server.listen(port, (err) => {
     if (err) throw err;
     console.log(`🚀 Ready on http://localhost:${port}`);

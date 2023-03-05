@@ -9,26 +9,45 @@ import {
   GithubOutlined,
   TwitterOutlined,
 } from "@ant-design/icons";
-import CircularProgress from "@/components/Atoms/CircularProgress";
+// import CircularProgress from "@/components/Atoms/CircularProgress";
 
 import { AUTH_TYPE } from '@/constants/type';
 
 import Logo from "@/public/images/logo.png";
 
-export declare interface IAuth {
-  type: AUTH_TYPE.SIGN_IN | AUTH_TYPE.SIGN_UP;
-  dispatch?: ({ type, value }: { type: string; value: unknown }) => void;
+export declare type TCredentials = {
+  username: string;
+  password: string;
 };
 
-export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
-  const onFinish = (values: Record<string, string>) => {
+export declare interface IAuth {
+  type: AUTH_TYPE.SIGN_IN | AUTH_TYPE.SIGN_UP;
+  isLoading: boolean;
+  dispatch?: ({
+    type,
+    value,
+  }: {
+    type: string;
+    value: TCredentials;
+  }) => void;
+};
+
+export function Auth({
+  type = AUTH_TYPE.SIGN_IN,
+  isLoading = false,
+  dispatch,
+}: IAuth) {
+  const onFinish = (values: TCredentials) => {
     dispatch?.({ type: "ON_FINISH", value: values });
   };
 
   const onFinishFailed = (
     errorInfo: ValidateErrorEntity<Record<string, string>>
   ) => {
-    dispatch?.({ type: "ON_FAILED", value: errorInfo });
+    dispatch?.({
+      type: "ON_FAILED",
+      value: errorInfo as unknown as TCredentials,
+    });
   };
 
   return (
@@ -72,13 +91,13 @@ export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
               className="gx-signin-form gx-form-row0"
             >
               <Form.Item
-                initialValue="demo@example.com"
+                initialValue="hoangpersievn"
                 rules={[
-                  { required: true, message: "The input is not valid E-mail!" },
+                  { required: true, message: "Please input your username" },
                 ]}
-                name="email"
+                name="username"
               >
-                <Input placeholder="Email" />
+                <Input placeholder="username" />
               </Form.Item>
               <Form.Item
                 initialValue="demo#123"
@@ -98,7 +117,12 @@ export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
                 </span>
               </Form.Item>
               <Form.Item>
-                <Button type="primary" className="gx-mb-0" htmlType="submit">
+                <Button
+                  type="primary"
+                  className="gx-mb-0"
+                  htmlType="submit"
+                  loading={isLoading}
+                >
                   <IntlMessages
                     id={`app.userAuth.${
                       type === AUTH_TYPE.SIGN_IN ? "signIn" : "signUp"
@@ -127,9 +151,11 @@ export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
                   {socials.map((el) => {
                     return (
                       <li key={el.key as string}>
-                        {el.render({
-                          onClick: () => console.log("type", el.key)
-                        }) as unknown as JSX.Element}
+                        {
+                          el.render({
+                            onClick: () => console.log("type", el.key),
+                          }) as unknown as JSX.Element
+                        }
                       </li>
                     );
                   })}
@@ -137,13 +163,13 @@ export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
               </div>
             </Form>
           </div>
-
-          {loader ? (
-            <div className="gx-loader-view">
+{/* 
+          {isLoading ? (
+            <div className="gx-isLoading-view">
               <CircularProgress />
             </div>
           ) : null}
-          {showMessage ? message.error(alertMessage.toString()) : null}
+          {showMessage ? message.error(alertMessage.toString()) : null} */}
         </div>
       </div>
     </div>
@@ -152,13 +178,12 @@ export function Auth({ type = AUTH_TYPE.SIGN_IN, dispatch }: IAuth) {
 
 // --
 
-const loader = false;
-const showMessage = false;
+// const showMessage = false;
 
-const alertMessage = "";
-const message = {
-  error: (content: string) => content as string,
-};
+// const alertMessage = "";
+// const message = {
+//   error: (content: string) => content as string,
+// };
 
 const socials: {
   key: string;
