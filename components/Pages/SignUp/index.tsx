@@ -19,5 +19,5 @@ export function SignUp() {
     console.log({ type, value });
   };
 
-  return <Auth type={AUTH_TYPE.SIGN_UP} dispatch={onDispatch} />;
+  return <Auth type={AUTH_TYPE.SIGN_UP} dispatch={onDispatch} isLoading={false} />;
 }
